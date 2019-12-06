@@ -2,29 +2,32 @@ close all;
 clc;
 clear;
 
-load('test.mat')
-A = rgb2gray(A); %% input data matrix
+addpath('data', 'helper')
+
+% load('test.mat')
+% A = rgb2gray(A); %% input data matrix
+
+A = double(imread('lena512.bmp'));
+
+r = 100; % estimate of rank
 
 %% Full SVD
 
 [U,S,V] = svd(A);
 
 figure;
-imshow(A);
+imshow(A, []);
 title('Original Image')
 
-%% Sketchy SVD (emulating streaming setting) 
+%% Sketchy SVD 
 
-r = 350; % estimated rank
-alpha = 0; % overstimate parameter
-k = r + alpha; % overestimated rank
+Ahat = sketchySVD(A, r);
 
-[sketch_U, sketch_S, sketch_V] = sketchy_svd(A, r, k);
-
-AA = sketch_U * sketch_S * sketch_V';
 figure;
-imshow(AA);
+imshow(Ahat, []);
 title('Approximated Image')
+
+[sketch_U, sketch_S, sketch_V] = svd(Ahat);
 
 %% Stats
 
@@ -37,8 +40,6 @@ figure;
 plot(log(diag(S)),'r');
 hold on;
 plot(log(diag(sketch_S)), 'b');
-hold on;
-plot(zeros(size(S,1)),'g');
 title('Spectral Decay')
 xlabel('Features')
 ylabel('Strength (log)')
